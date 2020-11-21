@@ -13,7 +13,7 @@ VERIFYINTERNET=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' 
 if [ "$VERIFYINTERNET" != "000" ]
 then
 VERSION="1.01"
-curl -o /tmp/.version --silent http://127.0.0.1:80
+curl -o /tmp/.version --silent https://raw.githubusercontent.com/edubuzzi/wifi-attack/main/version
 CHECK=$(cat /tmp/.version)
 rm /tmp/.version
 fi
