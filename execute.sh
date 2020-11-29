@@ -133,7 +133,9 @@ echo -e "${BOLD}(3) AIREPLAY-NG${COLORF}"
 sleep 0.05
 echo -e "${BOLD}(4) AIRCRACK-NG${COLORF}"
 sleep 0.05
-echo -e "${BOLD}(5) ARP SPOOFING${COLORF}"
+echo -e "${BOLD}(5) MAC SPOOF${COLORF}"
+sleep 0.05
+echo -e "${BOLD}(6) ARP SPOOF${COLORF}"
 sleep 0.05
 echo -e "${BOLD}(9) EXIT${COLORF}"
 sleep 0.05
@@ -145,7 +147,8 @@ case $CHOICE in
 2) airodump;;
 3) aireplay;;
 4) menuaircrack;;
-5) arpspoof;;
+5) macspoof;;
+6) arpspoof;;
 9) exit;;
 *) principal;;
 esac
@@ -185,8 +188,8 @@ echo 'exit' >> /tmp/.airmon
 echo "fi" >> /tmp/.airmon
 echo 'read -p "Channel to use Monitor mode => (ex: 12) => " CHANNEL' >> /tmp/.airmon
 echo 'airmon-ng start $INTERFACE $CHANNEL >> /dev/null' >> /tmp/.airmon
-echo "echo "If you selected a valid interface, '$INTERFACE' is now '${INTERFACE}'mon"" >> /tmp/.airmon
-echo 'sleep 4' >> /tmp/.airmon
+echo "echo "'$INTERFACE' is now '${INTERFACE}'mon"" >> /tmp/.airmon
+echo 'sleep 2' >> /tmp/.airmon
 echo 'exit' >> /tmp/.airmon
 gnome-terminal --tab -- "/tmp/.airmon" >> /dev/null
 rm /tmp/.airmon >> /dev/null
@@ -204,8 +207,9 @@ echo 'exit' >> /tmp/.airmon
 echo "fi" >> /tmp/.airmon
 echo 'airmon-ng stop $INTERFACE >> /dev/null' >> /tmp/.airmon
 echo 'service NetworkManager start' >> /tmp/.airmon
-echo "echo "If you selected a valid interface, '${INTERFACE}'mon"" is now '$INTERFACE' >> /tmp/.airmon
-echo 'sleep 4' >> /tmp/.airmon
+echo "INTERFACE="'$'"(echo "\"'$INTERFACE'"\" | sed -r 's/...$//g')" >> /tmp/.airmon
+echo "echo "'${INTERFACE}'mon"" is now '${INTERFACE}' >> /tmp/.airmon
+echo 'sleep 2' >> /tmp/.airmon
 echo 'exit' >> /tmp/.airmon
 gnome-terminal --tab -- "/tmp/.airmon" >> /dev/null
 rm /tmp/.airmon >> /dev/null
@@ -228,6 +232,13 @@ echo 'WRITE=""' >> /tmp/.airodump
 echo "else" >> /tmp/.airodump
 echo "WRITE="\"-w '$WRITE'"\"" >> /tmp/.airodump
 echo "fi" >> /tmp/.airodump
+echo 'read -p "Capture IVs for WEP Attack? [ENTER to dont use] => " IVS' >> /tmp/.airodump
+echo "if [ -z "\"'$IVS'"\" ]" >> /tmp/.airodump
+echo 'then' >> /tmp/.airodump
+echo 'IVS=""' >> /tmp/.airodump
+echo "else" >> /tmp/.airodump
+echo "IVS="\"--ivs"\"" >> /tmp/.airodump
+echo "fi" >> /tmp/.airodump
 echo 'read -p "Filter by a cryptographic cipher? (ex: OPN, WEP, WPA1 and WPA2?) [ENTER to dont use] => " ENC' >> /tmp/.airodump
 echo "if [ -z "\"'$ENC'"\" ]" >> /tmp/.airodump
 echo 'then' >> /tmp/.airodump
@@ -235,7 +246,7 @@ echo 'ENC=""' >> /tmp/.airodump
 echo "else" >> /tmp/.airodump
 echo "ENC="\"-t '$ENC'"\"" >> /tmp/.airodump
 echo "fi" >> /tmp/.airodump
-echo 'read -p "Use a specific channel? [ENTER to dont use] => " CHANNEL' >> /tmp/.airodump
+echo 'read -p "Use a specific channel? (ex: 1) [ENTER to dont use] => " CHANNEL' >> /tmp/.airodump
 echo "if [ -z "\"'$CHANNEL'"\" ]" >> /tmp/.airodump
 echo 'then' >> /tmp/.airodump
 echo 'CHANNEL=""' >> /tmp/.airodump
@@ -259,9 +270,9 @@ echo "fi" >> /tmp/.airodump
 echo 'read -p "Only show associated stations on the network? (y/Y) [ENTER to dont use] => " ASSOCIATED' >> /tmp/.airodump
 echo "if [ "\"'$ASSOCIATED'"\" = "\"y"\" ] || [ "\"'$ASSOCIATED'"\" = "\"Y"\" ]" >> /tmp/.airodump
 echo 'then' >> /tmp/.airodump
-echo 'ASSOCIATED=""' >> /tmp/.airodump
-echo "else" >> /tmp/.airodump
 echo "ASSOCIATED="\"-a"\"" >> /tmp/.airodump
+echo "else" >> /tmp/.airodump
+echo 'ASSOCIATED=""' >> /tmp/.airodump
 echo "fi" >> /tmp/.airodump
 echo 'read -p "Show WPS Version? (y/Y) [ENTER to dont use] => " WPSv' >> /tmp/.airodump
 echo "if [ "\"'$WPSv'"\" = "\"y"\" ] || [ "\"'$WPSv'"\" = "\"Y"\" ]" >> /tmp/.airodump
@@ -277,7 +288,7 @@ echo 'MANUFACTURER="-M"' >> /tmp/.airodump
 echo 'else' >> /tmp/.airodump
 echo 'MANUFACTURER=""' >> /tmp/.airodump
 echo 'fi' >> /tmp/.airodump
-echo "airodump-ng "'$INTERFACE'" "'$CHANNEL'" "'$CHANNEL'" "'$ESSID'" "'$BSSID'" "'$ASSOCIATED'" "'$ENC'" "'$WPSv'" "'$MANUFACTURER'" "'$WRITE'"" >> /tmp/.airodump
+echo "airodump-ng "'$INTERFACE'" "'$CHANNEL'" "'$IVS'" "'$CHANNEL'" "'$ESSID'" "'$BSSID'" "'$ASSOCIATED'" "'$ENC'" "'$WPSv'" "'$MANUFACTURER'" "'$WRITE'"" >> /tmp/.airodump
 gnome-terminal --tab -- "/tmp/.airodump" >> /dev/null
 rm /tmp/.airodump >> /dev/null
 principal
@@ -330,7 +341,7 @@ echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.deuth
 echo 'then' >> /tmp/.deuth
 echo 'exit' >> /tmp/.deuth
 echo "fi" >> /tmp/.deuth
-echo 'read -p "Number of packets you want to send in the attack (ex: 2) {0 = Infinite Packets} [ ENTER to send 1 Packet ] => " PACKETS' >> /tmp/.deuth
+echo 'read -p "Number of packets you want to send in the attack (ex: 2) {0 = DDOS Attack} [ ENTER to send 1 Packet ] => " PACKETS' >> /tmp/.deuth
 echo "if [ -z "\"'$PACKETS'"\" ]" >> /tmp/.deuth
 echo 'then' >> /tmp/.deuth
 echo 'PACKETS="1"' >> /tmp/.deuth
@@ -638,6 +649,91 @@ echo "aircrack-ng "'$FILE'" | egrep "\"1 handshake'|'PMKID"\"" >> /tmp/.search
 gnome-terminal --tab -- "/tmp/.search" >> /dev/null
 rm /tmp/.search >> /dev/null
 menuaircrack
+}
+
+function macspoof(){
+interfaces
+sleep 0.05
+echo -e "${BOLD}(1) NEW RANDOM MAC ADDRESS${COLORF}"
+sleep 0.05
+echo -e "${BOLD}(2) NEW SPECIFIC MAC ADDRESS${COLORF}"
+sleep 0.05
+echo -e "${BOLD}(3) BACK TO ORIGINAL MAC ADDRESS${COLORF}"
+sleep 0.05
+echo -e "${BOLD}(9) BACK${COLORF}"
+sleep 0.05
+echo -e "${BOLD}(99) EXIT${COLORF}"
+sleep 0.05
+echo
+sleep 0.05
+read -p "CHOICE => " CHOICE
+case $CHOICE in
+1) macspoofrandom;;
+2) macspoofspecific;;
+3) macspooforiginal;;
+9) principal;;
+99) exit;;
+*) macspoof;;
+esac
+}
+
+function macspoofrandom(){
+touch /tmp/.macspoofrandom >> /dev/null
+chmod +x /tmp/.macspoofrandom >> /dev/null
+echo 'read -p "Interface to perform the MAC Spoof (ex: wlan0 / wlan0mon) => " INTERFACE' >> /tmp/.macspoofrandom
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.macspoofrandom
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.macspoofrandom
+echo 'then' >> /tmp/.macspoofrandom
+echo 'exit' >> /tmp/.macspoofrandom
+echo "fi" >> /tmp/.macspoofrandom
+echo "ifconfig "'$INTERFACE'" down" >> /tmp/.macspoofrandom
+echo "macchanger -r "'$INTERFACE'"" >> /tmp/.macspoofrandom
+echo "ifconfig "'$INTERFACE'" up" >> /tmp/.macspoofrandom
+gnome-terminal --tab -- "/tmp/.macspoofrandom" >> /dev/null
+rm /tmp/.macspoofrandom >> /dev/null
+principal
+}
+
+function macspoofspecific(){
+touch /tmp/.macspoofspecific >> /dev/null
+chmod +x /tmp/.macspoofspecific >> /dev/null
+echo 'read -p "Interface to perform the MAC Spoof (ex: wlan0 / wlan0mon) => " INTERFACE' >> /tmp/.macspoofspecific
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.macspoofspecific
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.macspoofspecific
+echo 'then' >> /tmp/.macspoofspecific
+echo 'exit' >> /tmp/.macspoofspecific
+echo "fi" >> /tmp/.macspoofspecific
+echo 'read -p "Specific MAC address to use (ex: A1:B2:C3:D4:E5:F6) => " NEWMAC' >> /tmp/.macspoofspecific
+echo "if [ -z "\"'$NEWMAC'"\" ]" >> /tmp/.macspoofspecific
+echo 'then' >> /tmp/.macspoofspecific
+echo 'exit' >> /tmp/.macspoofspecific
+echo "else" >> /tmp/.macspoofspecific
+echo "ifconfig "'$INTERFACE'" down" >> /tmp/.macspoofspecific
+echo "macchanger --mac="'$NEWMAC'" "'$INTERFACE'"" >> /tmp/.macspoofspecific
+echo "sleep 1" >> /tmp/.macspoofspecific
+echo "ifconfig "'$INTERFACE'" up" >> /tmp/.macspoofspecific
+echo "fi" >> /tmp/.macspoofspecific
+gnome-terminal --tab -- "/tmp/.macspoofspecific" >> /dev/null
+rm /tmp/.macspoofspecific >> /dev/null
+principal
+}
+
+function macspooforiginal(){
+touch /tmp/.macspooforiginal >> /dev/null
+chmod +x /tmp/.macspooforiginal >> /dev/null
+echo 'read -p "Interface who wants have the original MAC Address (ex: wlan0 / wlan0mon) => " INTERFACE' >> /tmp/.macspooforiginal
+echo "TEST="'$'"(ifconfig | grep "\"'$INTERFACE'"\" | cut -d "\"' '"\" -f1 | cut -d "\"':'"\" -f1)" >> /tmp/.macspooforiginal
+echo "if [ "\"'$TEST'"\" = "\""""\" ] " >> /tmp/.macspooforiginal
+echo 'then' >> /tmp/.macspooforiginal
+echo 'exit' >> /tmp/.macspooforiginal
+echo "fi" >> /tmp/.macspooforiginal
+echo "ifconfig "'$INTERFACE'" down" >> /tmp/.macspooforiginal
+echo "macchanger -p "'$INTERFACE'"" >> /tmp/.macspooforiginal
+echo "sleep 1" >> /tmp/.macspooforiginal
+echo "ifconfig "'$INTERFACE'" up" >> /tmp/.macspooforiginal
+gnome-terminal --tab -- "/tmp/.macspooforiginal" >> /dev/null
+rm /tmp/.macspooforiginal >> /dev/null
+principal
 }
 
 function arpspoof(){
