@@ -12,7 +12,7 @@ function version(){
 VERIFYINTERNET=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' https://google.com)
 if [ "$VERIFYINTERNET" != "000" ]
 then
-VERSION="1.01"
+VERSION="1.02"
 curl -o /tmp/.version --silent https://raw.githubusercontent.com/edubuzzi/wifi-attack/main/version
 CHECK=$(cat /tmp/.version)
 rm /tmp/.version
@@ -70,9 +70,9 @@ echo -e "${BOLD}#  #  #     #   #           #${COLORF}"
 sleep 0.05
 if [ "$VERSION" = "$CHECK" ]
 then
-echo -e "${BOLD} ## ##      #   #           #     v1.01${COLORF}"
+echo -e "${BOLD} ## ##      #   #           #     v1.02${COLORF}"
 else
-echo -e "${BOLD} ## ##      #   #           #     v1.01 ${BLUE}(New Update: v"$CHECK")${COLORF}"
+echo -e "${BOLD} ## ##      #   #           #     v1.02 ${BLUE}(New Update: v"$CHECK")${COLORF}"
 fi
 sleep 0.05
 echo
