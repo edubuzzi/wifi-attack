@@ -12,7 +12,7 @@ function version(){
 VERIFYINTERNET=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' https://google.com)
 if [ "$VERIFYINTERNET" != "000" ]
 then
-VERSION="1.02"
+VERSION="1.03"
 curl -o /tmp/.version --silent https://raw.githubusercontent.com/edubuzzi/wifi-attack/main/version
 CHECK=$(cat /tmp/.version)
 rm /tmp/.version
@@ -564,9 +564,11 @@ aireplay
 function menuaircrack(){
 interfaces
 sleep 0.05
-echo -e "${BOLD}(1) CRACK PASSWORD WITH WORDLIST${COLORF}"
+echo -e "${BOLD}(1) CLEAN .cap FILE AND LEAVE ONLY HANDSHAKE${COLORF}"
 sleep 0.05
-echo -e "${BOLD}(2) SEARCH HANDSHAKE AND PMKID IN .cap FILE${COLORF}"
+echo -e "${BOLD}(2) CRACK PASSWORD WITH WORDLIST${COLORF}"
+sleep 0.05
+echo -e "${BOLD}(3) SEARCH HANDSHAKE AND PMKID IN .cap FILE${COLORF}"
 sleep 0.05
 echo -e "${BOLD}(9) BACK${COLORF}"
 sleep 0.05
@@ -576,12 +578,34 @@ echo
 sleep 0.05
 read -p "CHOICE => " CHOICE
 case $CHOICE in
-1) aircrack;;
-2) search;;
+1) wpaclean;;
+2) aircrack;;
+3) search;;
 9) principal;;
 99) exit;;
 *) airmon;;
 esac
+}
+
+function wpaclean(){
+touch /tmp/.wpaclean >> /dev/null
+chmod +x /tmp/.wpaclean >> /dev/null
+echo 'read -p "Path and name of the .cap file with captured handshake and many useless packages (ex: /root/capture.cap) => " FILE' >> /tmp/.wpaclean
+echo "if [ ! -f "\"'$FILE'"\" ]" >> /tmp/.wpaclean
+echo "then" >> /tmp/.wpaclean
+echo "exit" >> /tmp/.wpaclean
+echo "fi" >> /tmp/.wpaclean
+echo 'read -p "Path and name of the .cap file that you want to save only the handshake (ex: /root/just-handshake.cap) => " EXIT' >> /tmp/.wpaclean
+echo "if [ -z "\"'$EXIT'"\" ]" >> /tmp/.wpaclean
+echo "then" >> /tmp/.wpaclean
+echo "exit" >> /tmp/.wpaclean
+echo "fi" >> /tmp/.wpaclean
+echo 'echo' >> /tmp/.wpaclean
+echo "wpaclean "'$EXIT'" "'$FILE'"" >> /tmp/.wpaclean
+gnome-terminal --tab -- "/tmp/.wpaclean" >> /dev/null
+echo "sleep 2" >> /tmp/.wpaclean
+rm /tmp/.wpaclean >> /dev/null
+menuaircrack
 }
 
 function aircrack(){
