@@ -1,4 +1,4 @@
-# wifi-attack v1.02
+# wifi-attack v1.03
 
 ### git clone https://github.com/edubuzzi/wifi-attack
 
